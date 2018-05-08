@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        <meta charset="UTF-8">
+        <title>Food Web</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <style type="text/css">
+        body {
+            font-family: 'arial';
+            font-size: 20px;
+            margin: 10;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        img {
+            max-width: 100px;
+            max-height: 100px;
+            z-index: -1;
+            position: absolute;
+        }
+
+        #header {
+            height: 70px;
+        }
+
+        .top {
+            display: block;
+        }
+
+        #title {
+            font-size: 50px;
+            float: left;
+            width: 50%;
+        }
+
+        #scoreboard {
+            font-size: 30px;
+        }
+
+        #countdown_timer {
+            font-size: 30px;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #game {
+            height: 600px;
+        }
+
+        #player {
+            bottom: 0;
+            position: fixed;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+        }
+
+        .prey {
+            cursor: pointer;
+            width: 25px;
+        }
+        </style>
+    </head>
+    <script>
+    const web_1 = {'hawk': ['snake', 'shrew'],
+                 'snake': ['shrew', 'frog'],
+                 'shrew': ['grasshopper', 'cricket'],
+                 'grasshopper': ['grass'],
+                 'cricket': ['cattail'],
+                 'frog': ['cricket'],
+                 'cattail': [],
+                 'grass': []}
+    const web_2 = {'hawk': ['rabbit', 'snake'],
+                  'rabbit': ['grass'],
+                  'snake': ['frog', 'grasshopper'],
+                  'frog': ['grasshopper'],
+                  'mouse': ['grass', 'grasshopper'],
+                  'grasshopper': ['grass'],
+                  'grass': []}
+    const web_3 = {'weasel': ['mouse'],
+                  'fox': ['rabbit', 'squirrel', 'mouse'],
+                  'hawk': ['thrush', 'rabbit'],
+                  'thrush': ['caterpillar'],
+                  'rabbit': ['grass', 'shrubs'],
+                  'squirrel': ['shrubs'],
+                  'mouse': ['shrubs'],
+                  'caterpillar': ['grass'],
+                  'grass': [],
+                  'shrubs': []}
+    const food_webs = [web_1, web_2, web_3];
+    var timeLeft = 120;
+    var score = 0;
+    var web, curr, cursor, eating;
+    function getRandomElement(array) {
+        var index = Math.floor(Math.random() * array.length);
+        return array[index];
+    }
+
+    function getRandomPosition(element) {
+        var header = document.getElementById('header');
+        var x = game.clientWidth-element.clientWidth;
+        var y = game.clientHeight-element.clientHeight;
+        var randomX = 10 + Math.floor(Math.random()*x);
+        var randomY = header.clientHeight + Math.floor(Math.random()*y);
+        return [randomX,randomY];
+    }
+
+    function updateTimer() {
+        timeLeft -= 1;
+        var timer = document.getElementById('countdown_timer');
+        timer.innerHTML = timeLeft;
+
+        if (timeLeft == 0) {
+            alert("Your score is " + document.getElementById('score').innerHTML);
+        } 
+        else {
+            countdown();
+        }
+    }
+
+    function countdown() {
+        t = setTimeout(updateTimer, 1000);
+    }
+
+    function updateAnimal(event) {
+        var prey = event.target.innerHTML;
+        if (web[curr].includes(prey)) {
+            eating = setInterval(function() {
+                event.target.innerHTML = prey.slice(1, prey.length);
+                prey = event.target.innerHTML;
+            }, 300);
+        }
+        event.target.style.color = 'lightgray';
+        if (event.target.innerHTML.length == 0) {
+            console.log('done');
+            eatAnimal(event);
+        }
+    }
+
+    function eatAnimal(event) {
+        var prey = event.target.className.replace('prey ', '');
+        if (web[curr].includes(prey) && event.target.innerHTML.length == 0) {
+            console.log(curr, web[curr].length);
+            console.log(prey, web[prey].length);
+            var scoreBoard = document.getElementById('score');
+            score += web[prey].length + web[curr].length;
+            scoreBoard.innerHTML = score;
+        }
+        if (event.target.innerHTML.length == 0) {
+            if (prey.parentNode == game) {
+                game.removeChild(prey);
+            }
+        }
+    }
+
+    function resetAnimal(event) {
+        event.target.style.color = 'black';
+        clearInterval(eating);
+    }
+
+    function updatePlayer(event) {
+        curr = event.target.className.replace('prey ', '');
+        document.getElementById(document.getElementById('player').innerHTML).setAttribute('hidden', true);
+        if (Object.keys(web).includes(curr)) {
+            player.innerHTML = curr;
+            game.removeChild(event.target);
+            var scoreBoard = document.getElementById('score');
+            score -= web[curr].length;
+            scoreBoard.innerHTML = score;
+            image = document.getElementById(curr);
+            image.removeAttribute('hidden');
+            cursor = image;
+        }
+    }
+
+    function createAnimal() {
+        var animal = document.createElement('div');
+        animal.setAttribute("style", "position:absolute;");
+        type = getRandomElement(Object.keys(web))
+        animal.setAttribute("class", "prey " + type);
+        animal.innerHTML = type;
+        game.appendChild(animal);
+        var xy = getRandomPosition(animal);
+        animal.style.left = xy[0] + 'px';
+        animal.style.top = xy[1] + 'px';
+        animal.addEventListener('click', updatePlayer);
+        animal.addEventListener('mouseenter', updateAnimal);
+        animal.addEventListener('mouseleave', resetAnimal);
+        setTimeout(function() {
+            if (animal.parentNode == game) {
+                game.removeChild(animal);
+            }
+        }, 3000 + Math.floor(Math.random() * 5000));
+    }
+
+    function startGame() {
+        web = getRandomElement(food_webs);
+        curr = getRandomElement(Object.keys(web));
+        player.innerHTML = curr;
+        cursor = document.getElementById(curr);
+        cursor.removeAttribute('hidden');
+        $(document).mousemove(function(e) {
+            $(cursor).css({
+                left: e.pageX - $(cursor).width()/2,
+                top: e.pageY - $(cursor).height()/2
+            });
+        });
+        setTimeout(function(){
+
+        }, 1000);
+        setInterval(createAnimal, Math.floor(Math.random() * 3000)); 
+    }
+    window.onload = function() {
+        const game = document.getElementById('game');
+        const player = document.getElementById('player');
+        startGame();
+        countdown();
+    }
+    </script>
+    <body>
+        <div id="header" class="top">
+            <div id="title">Food Web</div>
+            <div style="float: right">
+                <div id="scoreboard">Score: <span id="score">0</span></div>
+                <span id="countdown_timer">120</span>
+            </div>
+        </div>
+        <div id="game" class="container">
+            <img id="hawk" src="https://gallery.yopriceville.com/var/albums/Free-Clipart-Pictures/Birds-PNG/Hawk_PNG_Clipart_Picture.png?m=1434276636" hidden/>
+            <img id="snake" src="https://cdn3.bigcommerce.com/s-dsqbh7cd/products/467/images/584/ALL_SNAKES__98374.1456188536.386.513.png?c=2" hidden />
+            <img id="shrew" src="https://vignette.wikia.nocookie.net/mafiawars/images/4/4b/Huge_item_eurasianwatershrew_01.png/revision/latest?cb=20130314140743" hidden />
+            <img id="grasshopper" src="http://webiconspng.com/wp-content/uploads/2017/09/Grasshopper-PNG-Image-86751.png" hidden />
+            <img id="cricket" src="https://deepblueaquarium.com.au/wp-content/uploads/2017/05/Cricket-No-Background.png" hidden />
+            <img id="frog" src="https://toppng.com/public/uploads/preview/frog-11523133799rokczkoeuc.png" hidden />
+            <img id="cattail" src="https://vignette.wikia.nocookie.net/animallica/images/0/0b/Cattail.png/revision/latest?cb=20180403125217" hidden />
+            <img id="grass" src="https://www.reinerstilesets.de/3dtextures/billboardgrass0001.png" hidden />
+            <img id="rabbit" src="https://guelph.ca/wp-content/uploads/rabbit.png" hidden />
+            <img id="mouse" src="https://www.trappingusa.com/wp-content/uploads/2017/07/rodent-control.png" hidden />
+            <img id="weasel" src="https://pluspng.com/img-png/weasel-png-hd-file-huge-item-stoatally-weasel-01-png-200.png" hidden />
+            <img id="fox" src="https://www.picpng.com/images/large/fox-clipart-23472" hidden />
+            <img id="thrush" src="http://bicknellsthrush.org/wp-content/uploads/2017/02/Bith-painting-no-background.png" hidden />
+            <img id="squirrel" src="https://i.pinimg.com/originals/72/38/31/723831425fbbbe3bc8dd062cf3bc5d17.png" hidden />
+            <img id="caterpillar" src="https://cdn.pixabay.com/photo/2013/07/13/10/17/caterpillar-156937_960_720.png" hidden />
+            <img id="shrubs" src="https://pre00.deviantart.net/25f2/th/pre/i/2013/033/3/b/png_bush_1_by_moonglowlilly-d5tk4qh.png" hidden />
+        </div>
+        <div id="player"></div>
+    </body>
+</html>
