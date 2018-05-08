@@ -135,17 +135,11 @@
             }, 300);
         }
         event.target.style.color = 'lightgray';
-        if (event.target.innerHTML.length == 0) {
-            console.log('done');
-            eatAnimal(event);
-        }
     }
 
     function eatAnimal(event) {
         var prey = event.target.className.replace('prey ', '');
         if (web[curr].includes(prey) && event.target.innerHTML.length == 0) {
-            console.log(curr, web[curr].length);
-            console.log(prey, web[prey].length);
             var scoreBoard = document.getElementById('score');
             score += web[prey].length + web[curr].length;
             scoreBoard.innerHTML = score;
@@ -159,6 +153,7 @@
 
     function resetAnimal(event) {
         event.target.style.color = 'black';
+        eatAnimal(event);
         clearInterval(eating);
     }
 
@@ -188,7 +183,7 @@
         animal.style.left = xy[0] + 'px';
         animal.style.top = xy[1] + 'px';
         animal.addEventListener('click', updatePlayer);
-        animal.addEventListener('mouseenter', updateAnimal);
+        animal.addEventListener('mouseover', updateAnimal);
         animal.addEventListener('mouseleave', resetAnimal);
         setTimeout(function() {
             if (animal.parentNode == game) {
