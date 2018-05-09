@@ -5,276 +5,175 @@
         <title>Food Web</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <style type="text/css">
-        body {
-            font-family: 'arial';
-            font-size: 20px;
-            margin: 10;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        img {
-            max-width: 100px;
-            max-height: 100px;
-            z-index: -1;
-            position: absolute;
-        }
-
-        #header {
-            height: 70px;
-        }
-
-        .top {
-            display: block;
-        }
-
-        #title {
-            font-size: 50px;
-            float: left;
-            width: 50%;
-        }
-
-        #scoreboard {
-            font-size: 30px;
-        }
-
-        #countdown_timer {
-            font-size: 30px;
-        }
-
-        .container {
-            width: 100%;
-            height: 100%;
-        }
-
-        #game {
-            height: 600px;
-        }
-
-        #player {
-            bottom: 0;
-            position: fixed;
-            width: 100%;
-            text-align: center;
-            font-size: 40px;
-        }
-
-        .prey {
-            cursor: pointer;
-            width: 90px;
-            height: 25px;
-            text-align: center;
-        }
-
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            background-color: rgb(0,0,0); 
-            background-color: rgba(0,0,0,0.4); 
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; 
-            padding: 10px;
-            border: 1px solid #888;
-            width: 50%; 
-            text-align: center;
-        }
-
-        .play {
-            color: darkgray;
-            font-size: 25px;
-            font-weight: bold;
-        }
-
-        .play:hover,
-        .play:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
+            body {font-family: 'arial'; font-size: 20px; margin: 10; padding: 0; overflow: hidden;}
+            img {max-width: 100px; max-height: 100px; z-index: -1; position: absolute;}
+            #header {height: 70px;}
+            .top {display: block;}
+            #title {font-size: 50px; float: left; width: 50%;}
+            #scoreboard {font-size: 30px;}
+            #countdown_timer {font-size: 30px;}
+            .container {width: 100%; height: 100%;}
+            #game {height: 600px;}
+            #player {bottom: 0; position: fixed; width: 100%; text-align: center; font-size: 40px;}
+            .prey {cursor: pointer; width: 90px; height: 25px; text-align: center;}
+            .modal {display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgb(0,0,0); background-color: rgba(0,0,0,0.4);}
+            .modal-content {background-color: #fefefe; margin: 15% auto; padding: 10px; border: 1px solid #888; width: 50%; text-align: center;}
+            .play {color: darkgray; font-size: 25px; font-weight: bold;}
+            .play:hover, .play:focus {color: black; text-decoration: none; cursor: pointer;}
         </style>
     </head>
     <script>
-    const web_1 = {'hawk': ['snake', 'shrew'],
-                 'snake': ['shrew', 'frog'],
-                 'shrew': ['grasshopper', 'cricket'],
-                 'grasshopper': ['grass'],
-                 'cricket': ['cattail'],
-                 'frog': ['cricket'],
-                 'cattail': [],
-                 'grass': []}
-    const web_2 = {'hawk': ['rabbit', 'snake'],
-                  'rabbit': ['grass'],
-                  'snake': ['frog', 'grasshopper'],
-                  'frog': ['grasshopper'],
-                  'mouse': ['grass', 'grasshopper'],
-                  'grasshopper': ['grass'],
-                  'grass': []}
-    const web_3 = {'weasel': ['mouse'],
-                  'fox': ['rabbit', 'squirrel', 'mouse'],
-                  'hawk': ['thrush', 'rabbit'],
-                  'thrush': ['caterpillar'],
-                  'rabbit': ['grass', 'shrubs'],
-                  'squirrel': ['shrubs'],
-                  'mouse': ['shrubs'],
-                  'caterpillar': ['grass'],
-                  'grass': [],
-                  'shrubs': []}
-    const food_webs = [web_1, web_2, web_3];
-    var timeLeft = 10;
-    var score = 0;
-    var web, curr, cursor, eating, create, remove;
-    
-    function getRandomElement(array) {
-        var index = Math.floor(Math.random() * array.length);
-        return array[index];
-    }
+        const web_1 = {'hawk': ['snake', 'shrew'], 'snake': ['shrew', 'frog'], 'shrew': ['grasshopper', 'cricket'], 'grasshopper': ['grass'], 'cricket': ['cattail'], 'frog': ['cricket'], 'cattail': [], 'grass': []};
+        const web_2 = {'hawk': ['rabbit', 'snake'], 'rabbit': ['grass'], 'snake': ['frog', 'grasshopper'], 'frog': ['grasshopper'], 'mouse': ['grass', 'grasshopper'], 'grasshopper': ['grass'], 'grass': []};
+        const web_3 = {'weasel': ['mouse'], 'fox': ['rabbit', 'squirrel', 'mouse'], 'hawk': ['thrush', 'rabbit'], 'thrush': ['caterpillar'], 'rabbit': ['grass', 'shrubs'], 'squirrel': ['shrubs'], 'mouse': ['shrubs'], 'caterpillar': ['grass'], 'grass': [], 'shrubs': []};
+        const food_webs = [web_1, web_2, web_3];
+        var timeLeft = 10;
+        var score = 0;
+        var web, curr, cursor, eating, create, remove;
 
-    function getRandomPosition(element) {
-        var header = document.getElementById('header');
-        var x = game.clientWidth-element.clientWidth;
-        var y = game.clientHeight-element.clientHeight;
-        var randomX = 10 + Math.floor(Math.random()*x);
-        var randomY = header.clientHeight + Math.floor(Math.random()*y);
-        return [randomX,randomY];
-    }
-
-    function updateTimer() {
-        timeLeft -= 1;
-        var timer = document.getElementById('countdown_timer');
-        timer.innerHTML = timeLeft;
-
-        if (timeLeft == 0) {
-            clearInterval(create);
-            clearInterval(eating);
-            clearInterval(remove);
-            var modal = document.getElementById('end');
-            modal.style.display = 'block';
-            var play = document.getElementsByClassName('play')[0];
-            play.onclick = function() {
-                modal.style.display = 'none';
-                window.location.reload();
-            };
-        } 
-        else {
-            countdown();
+        function getRandomElement(array) {
+            var index = Math.floor(Math.random() * array.length);
+            return array[index];
         }
-    }
 
-    function countdown() {
-        t = setTimeout(updateTimer, 1000);
-    }
-
-    function updateAnimal(event) {
-        var prey = event.target.innerHTML;
-        if (web[curr].includes(prey)) {
-            eating = setInterval(function() {
-                event.target.innerHTML = prey.slice(1, prey.length);
-                prey = event.target.innerHTML;
-            }, 300);
+        function getRandomPosition(element) {
+            var header = document.getElementById('header');
+            var x = game.clientWidth-element.clientWidth;
+            var y = game.clientHeight-element.clientHeight;
+            var randomX = 10 + Math.floor(Math.random()*x);
+            var randomY = header.clientHeight + Math.floor(Math.random()*y);
+            return [randomX,randomY];
         }
-        event.target.style.color = 'lightgray';
-    }
 
-    function eatAnimal(event) {
-        var prey = event.target.className.replace('prey ', '');
-        if (web[curr].includes(prey) && event.target.innerHTML.length == 0) {
-            var scoreBoard = document.getElementsByClassName('score');
-            score += web[prey].length + web[curr].length;
-            scoreBoard[0].innerHTML = score;
-            scoreBoard[1].innerHTML = score;
-        }
-        if (event.target.innerHTML.length == 0) {
-            if (prey.parentNode == game) {
-                game.removeChild(prey);
+        function updateTimer() {
+            timeLeft -= 1;
+            var timer = document.getElementById('countdown_timer');
+            timer.innerHTML = timeLeft;
+            if (timeLeft == 0) {
+                while (game.firstChild) {
+                    game.removeChild(game.firstChild);
+                };
+                clearInterval(create);
+                clearInterval(remove);
+                document.getElementById('end').style.display = 'block';
+                var play = document.getElementsByClassName('play')[0];
+                play.onclick = function() {
+                    modal.style.display = 'none';
+                    window.location.reload();
+                };
+            } 
+            else {
+                countdown();
             }
         }
-    }
 
-    function resetAnimal(event) {
-        clearInterval(eating);
-        event.target.style.color = 'black';
-        if (event.target.innerHTML.length > 0) {
-            event.target.innerHTML = event.target.className.replace('prey ', '');
-        } else {
-            eatAnimal(event);
+        function countdown() {
+            t = setTimeout(updateTimer, 1000);
         }
-    }
 
-    function updatePlayer(event) {
-        var new_player = event.target.className.replace('prey ', '');
-        if (Object.keys(web).includes(new_player) && new_player != curr) {
-            curr = new_player;
-            document.getElementById(document.getElementById('player').innerHTML).setAttribute('hidden', true);
-            player.innerHTML = curr;
-            game.removeChild(event.target);
-            var scoreBoard = document.getElementsByClassName('score');
-            score -= web[curr].length;
-            scoreBoard[0].innerHTML = score;
-            scoreBoard[1].innerHTML = score;
-            image = document.getElementById(curr);
-            image.removeAttribute('hidden');
-            cursor = image;
+        function updateAnimal(event) {
+            var prey = event.target.innerHTML;
+            if (web[curr].includes(prey)) {
+                eating = setInterval(function() {
+                    event.target.innerHTML = prey.slice(1, prey.length);
+                    prey = event.target.innerHTML;
+                }, 300);
+            }
+            event.target.style.color = 'lightgray';
         }
-    }
 
-    function createAnimal() {
-        var animal = document.createElement('div');
-        animal.setAttribute("style", "position:absolute;");
-        type = getRandomElement(Object.keys(web))
-        animal.setAttribute("class", "prey " + type);
-        animal.innerHTML = type;
-        game.appendChild(animal);
-        var xy = getRandomPosition(animal);
-        animal.style.left = xy[0] + 'px';
-        animal.style.top = xy[1] + 'px';
-        animal.addEventListener('click', updatePlayer);
-        animal.addEventListener('mouseover', updateAnimal);
-        animal.addEventListener('mouseleave', resetAnimal);
-        (function loop() {
-            var rand = 3000 + Math.floor(Math.random() * 5000);
-            remove = setTimeout(function() {
-                if (animal.parentNode == game) {
-                    game.removeChild(animal);
+        function eatAnimal(event) {
+            var prey = event.target.className.replace('prey ', '');
+            if (web[curr].includes(prey) && event.target.innerHTML.length == 0) {
+                var scoreBoard = document.getElementsByClassName('score');
+                score += web[prey].length + web[curr].length;
+                scoreBoard[0].innerHTML = score;
+                scoreBoard[1].innerHTML = score;
+            }
+            if (event.target.innerHTML.length == 0) {
+                if (prey.parentNode == game) {
+                    game.removeChild(prey);
                 }
-                loop();
-            }, rand);
-        }());
-    }
+            }
+        }
 
-    function startGame() {
-        web = getRandomElement(food_webs);
-        curr = getRandomElement(Object.keys(web));
-        player.innerHTML = curr;
-        cursor = document.getElementById(curr);
-        cursor.removeAttribute('hidden');
-        $(document).mousemove(function(e) {
-            $(cursor).css({
-                left: e.pageX - $(cursor).width()/2,
-                top: e.pageY - $(cursor).height()/2
+        function resetAnimal(event) {
+            clearInterval(eating);
+            event.target.style.color = 'black';
+            if (event.target.innerHTML.length > 0) {
+                event.target.innerHTML = event.target.className.replace('prey ', '');
+            } else {
+                eatAnimal(event);
+            }
+        }
+
+        function updatePlayer(event) {
+            var new_player = event.target.className.replace('prey ', '');
+            if (Object.keys(web).includes(new_player) && new_player != curr) {
+                curr = new_player;
+                document.getElementById(document.getElementById('player').innerHTML).setAttribute('hidden', true);
+                player.innerHTML = curr;
+                game.removeChild(event.target);
+                var scoreBoard = document.getElementsByClassName('score');
+                score -= web[curr].length;
+                scoreBoard[0].innerHTML = score;
+                scoreBoard[1].innerHTML = score;
+                image = document.getElementById(curr);
+                image.removeAttribute('hidden');
+                cursor = image;
+            }
+        }
+
+        function createAnimal() {
+            var animal = document.createElement('div');
+            animal.setAttribute("style", "position:absolute;");
+            type = getRandomElement(Object.keys(web))
+            animal.setAttribute("class", "prey " + type);
+            animal.innerHTML = type;
+            game.appendChild(animal);
+            var xy = getRandomPosition(animal);
+            animal.style.left = xy[0] + 'px';
+            animal.style.top = xy[1] + 'px';
+            animal.addEventListener('click', updatePlayer);
+            animal.addEventListener('mouseover', updateAnimal);
+            animal.addEventListener('mouseleave', resetAnimal);
+            (function loop() {
+                var rand = 3000 + Math.floor(Math.random() * 5000);
+                remove = setTimeout(function() {
+                    if (animal.parentNode == game) {
+                        game.removeChild(animal);
+                    }
+                    loop();
+                }, rand);
+            }());
+        }
+
+        function startGame() {
+            web = getRandomElement(food_webs);
+            curr = getRandomElement(Object.keys(web));
+            player.innerHTML = curr;
+            cursor = document.getElementById(curr);
+            cursor.removeAttribute('hidden');
+            $(document).mousemove(function(e) {
+                $(cursor).css({
+                    left: e.pageX - $(cursor).width()/2,
+                    top: e.pageY - $(cursor).height()/2
+                });
             });
-        });
-        (create = function loop() {
-            var rand = Math.floor(Math.random() * 3000);
-            setTimeout(function() {
-                createAnimal();
-                loop();
-            }, rand);
-        }());
-    }
-    window.onload = function() {
-        const game = document.getElementById('game');
-        const player = document.getElementById('player');
-        startGame();
-        countdown();
-    }
+            (function loop() {
+                var rand = Math.floor(Math.random() * 3000);
+                create = setTimeout(function() {
+                    createAnimal();
+                    loop();
+                }, rand);
+            }());
+        }
+        window.onload = function() {
+            const game = document.getElementById('game');
+            const player = document.getElementById('player');
+            startGame();
+            countdown();
+        }
     </script>
     <body>
         <div id="header" class="top">
@@ -284,14 +183,14 @@
                 <span id="countdown_timer">120</span>
             </div>
         </div>
-        <div id="game" class="container">
-            <div id="end" class="modal">
-                <div class="modal-content">
-                    GAME OVER!<br><br>
-                    Your score is <span class="score">0</span><br>
-                    <span class="play">Play again</span>
-                </div>
+        <div id="end" class="modal">
+            <div class="modal-content">
+                GAME OVER!<br><br>
+                Your score is <span class="score">0</span><br>
+                <span class="play">Play again</span>
             </div>
+        </div>
+        <div id="game" class="container">
             <img id="hawk" src="https://gallery.yopriceville.com/var/albums/Free-Clipart-Pictures/Birds-PNG/Hawk_PNG_Clipart_Picture.png?m=1434276636" hidden/>
             <img id="snake" src="https://cdn3.bigcommerce.com/s-dsqbh7cd/products/467/images/584/ALL_SNAKES__98374.1456188536.386.513.png?c=2" hidden />
             <img id="shrew" src="https://vignette.wikia.nocookie.net/mafiawars/images/4/4b/Huge_item_eurasianwatershrew_01.png/revision/latest?cb=20130314140743" hidden />
