@@ -120,7 +120,6 @@
                 curr = new_player;
                 player.innerHTML = curr;
                 var change = document.createElement('div');
-                if (event.target.parentNode == game) {game.removeChild(event.target);}
                 cursor.setAttribute('hidden', true);
                 cursor.setAttribute('src', document.getElementById(curr).src);
                 change.setAttribute('style', 'left: ' + event.target.style.left + '; top: ' + event.target.style.top + '; position: absolute; text-align: center; color: red; font-size: 50px; margin-top: -10px;');
@@ -142,7 +141,8 @@
             web = getRandomElement(food_webs);
             curr = getRandomElement(Object.keys(web));
             player.innerHTML = curr;
-            cursor = document.getElementById(curr);
+            cursor = document.getElementById('cursor');
+            cursor.setAttribute('src', document.getElementById(curr).src);
             $(document).mousemove(function(e) {
                 $(cursor).css({left: e.pageX - $(cursor).width()/2, top: e.pageY - $(cursor).height()/2});
             });
@@ -175,6 +175,7 @@
             </div>
         </div>
         <div id="game" class="container">
+            <img id="cursor" />
             <img id="hawk" src="https://gallery.yopriceville.com/var/albums/Free-Clipart-Pictures/Birds-PNG/Hawk_PNG_Clipart_Picture.png?m=1434276636" hidden/>
             <img id="snake" src="https://cdn3.bigcommerce.com/s-dsqbh7cd/products/467/images/584/ALL_SNAKES__98374.1456188536.386.513.png?c=2" hidden />
             <img id="shrew" src="https://vignette.wikia.nocookie.net/mafiawars/images/4/4b/Huge_item_eurasianwatershrew_01.png/revision/latest?cb=20130314140743" hidden />
