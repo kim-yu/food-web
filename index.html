@@ -29,7 +29,6 @@
         const food_webs = [web_1, web_2, web_3];
         var timeLeft = 120;
         var score = 0;
-        var changePlayer = false;
         var web, curr, cursor, eating, create, remove;
 
         function getRandomElement(array) {
@@ -38,10 +37,8 @@
         }
         function getRandomPosition(element) {
             var header = document.getElementById('header');
-            var x = game.clientWidth-element.clientWidth;
-            var y = game.clientHeight-element.clientHeight;
-            var randomX = 10 + Math.floor(Math.random()*x);
-            var randomY = header.clientHeight + Math.floor(Math.random()*y);
+            var randomX = 10 + Math.floor(Math.random()*(game.clientWidth-element.clientWidth));
+            var randomY = header.clientHeight + Math.floor(Math.random()*(game.clientHeight-element.clientHeight));
             return [randomX,randomY];
         }
 
@@ -60,89 +57,7 @@
             } 
             else {countdown();}
         }
-        function countdown() {
-            t = setTimeout(updateTimer, 1000);
-        }
-
-        function updateAnimal(event) {
-            if (web[curr].includes(event.target.className.replace('prey ', ''))) {
-                eating = setInterval(function() {
-                    event.target.innerHTML = event.target.innerHTML.slice(1, event.target.innerHTML.length);
-                }, 300);
-                setTimeout(function() {
-                    eatAnimal(event);
-                }, 300 * event.target.className.replace('prey ', '').length);
-            }
-            event.target.style.color = 'lightgray';
-        }
-
-        function eatAnimal(event) {
-            clearInterval(eating);
-            var prey = event.target.className.replace('prey ', '');
-            if (web[curr].includes(prey) && event.target.innerHTML.length == 0) {
-                if (event.target.parentNode == game) {
-                    game.removeChild(event.target);
-                }
-                var change = document.createElement('div');
-                cursor.setAttribute('hidden', true);
-                change.setAttribute('style', 'left: ' + event.target.style.left+ '; top: ' + event.target.style.top + '; position: absolute; text-align: center; color: green; font-size: 50px; margin-top: -10px; margin-left: 50px;');
-                change.innerHTML = '+' + (web[prey].length + web[curr].length);
-                game.appendChild(change);
-                setTimeout(function() {
-                    cursor.removeAttribute('hidden');
-                }, 500);
-                var scoreBoard = document.getElementsByClassName('score');
-                score += web[prey].length + web[curr].length;
-                scoreBoard[0].innerHTML = score;
-                scoreBoard[1].innerHTML = score;
-                setTimeout(function() {
-                    if (change.parentNode == game) {
-                        game.removeChild(change);
-                    }
-                }, 300);
-            }
-        }
-
-        function resetAnimal(event) {
-            if (!(event.target.innerHTML[0] == '-' || event.target.innerHTML[0] == '+')) {
-                event.target.style.color = 'black';
-            }
-            clearInterval(eating);
-        }
-
-        function updatePlayer(event) {
-            var new_player = event.target.className.replace('prey ', '');
-            if (Object.keys(web).includes(new_player) && new_player != curr) {
-                curr = new_player;
-                player.innerHTML = curr;
-                var change = document.createElement('div');
-                if (event.target.parentNode == game) {
-                    game.removeChild(event.target);
-                }
-                cursor.setAttribute('hidden', true);
-                cursor.setAttribute('src', document.getElementById(curr).src);
-                change.setAttribute('style', 'left: ' + event.target.style.left + '; top: ' + event.target.style.top + '; position: absolute; text-align: center; color: red; font-size: 50px; margin-top: -10px;');
-                change.innerHTML = '-' + web[curr].length;
-                game.appendChild(change);
-                var scoreBoard = document.getElementsByClassName('score');
-                score -= web[curr].length;
-                scoreBoard[0].innerHTML = score;
-                scoreBoard[1].innerHTML = score;
-                setTimeout(function() {
-                    cursor.removeAttribute('hidden');
-                }, 500);
-                changePlayer = true;
-                // console.log(web[curr]);
-                setTimeout(function() {
-                    if (change.parentNode == game) {
-                        game.removeChild(change);
-                    }
-                }, 500);
-            }
-            if (event.target.parentNode == game) {
-                game.removeChild(event.target);
-            }
-        }
+        function countdown() {t = setTimeout(updateTimer, 1000);}
 
         function createAnimal() {
             var animal = document.createElement('div');
@@ -160,25 +75,76 @@
             (function loop() {
                 var rand = 3000 + Math.floor(Math.random() * 5000);
                 remove = setTimeout(function() {
-                    if (animal.parentNode == game) {
-                        game.removeChild(animal);
-                    }
+                    if (animal.parentNode == game) {game.removeChild(animal);}
                     loop();
                 }, rand);
             }());
+        }
+        function updateAnimal(event) {
+            if (web[curr].includes(event.target.className.replace('prey ', ''))) {
+                eating = setInterval(function() {
+                    event.target.innerHTML = event.target.innerHTML.slice(1, event.target.innerHTML.length);
+                }, 300);
+                setTimeout(function() {eatAnimal(event);}, 300 * event.target.className.replace('prey ', '').length);
+            }
+            event.target.style.color = 'lightgray';
+        }
+        function eatAnimal(event) {
+            clearInterval(eating);
+            var prey = event.target.className.replace('prey ', '');
+            if (web[curr].includes(prey) && event.target.innerHTML.length == 0) {
+                if (event.target.parentNode == game) {game.removeChild(event.target);}
+                var change = document.createElement('div');
+                cursor.setAttribute('hidden', true);
+                change.setAttribute('style', 'left: ' + event.target.style.left+ '; top: ' + event.target.style.top + '; position: absolute; text-align: center; color: green; font-size: 50px; margin-top: -10px; margin-left: 50px;');
+                change.innerHTML = '+' + (web[prey].length + web[curr].length);
+                game.appendChild(change);
+                setTimeout(function() {cursor.removeAttribute('hidden');}, 500);
+                var scoreBoard = document.getElementsByClassName('score');
+                score += web[prey].length + web[curr].length;
+                scoreBoard[0].innerHTML = score;
+                scoreBoard[1].innerHTML = score;
+                setTimeout(function() {
+                    if (change.parentNode == game) {game.removeChild(change);}
+                }, 300);
+            }
+        }
+        function resetAnimal(event) {
+            if (!(event.target.innerHTML[0] == '-' || event.target.innerHTML[0] == '+')) {event.target.style.color = 'black';}
+            clearInterval(eating);
+        }
+
+        function updatePlayer(event) {
+            var new_player = event.target.className.replace('prey ', '');
+            if (Object.keys(web).includes(new_player) && new_player != curr) {
+                curr = new_player;
+                player.innerHTML = curr;
+                var change = document.createElement('div');
+                if (event.target.parentNode == game) {game.removeChild(event.target);}
+                cursor.setAttribute('hidden', true);
+                cursor.setAttribute('src', document.getElementById(curr).src);
+                change.setAttribute('style', 'left: ' + event.target.style.left + '; top: ' + event.target.style.top + '; position: absolute; text-align: center; color: red; font-size: 50px; margin-top: -10px;');
+                change.innerHTML = '-' + web[curr].length;
+                game.appendChild(change);
+                var scoreBoard = document.getElementsByClassName('score');
+                score -= web[curr].length;
+                scoreBoard[0].innerHTML = score;
+                scoreBoard[1].innerHTML = score;
+                setTimeout(function() {cursor.removeAttribute('hidden');}, 500);
+                setTimeout(function() {
+                    if (change.parentNode == game) {game.removeChild(change);}
+                }, 500);
+            }
+            if (event.target.parentNode == game) {game.removeChild(event.target);}
         }
 
         function startGame() {
             web = getRandomElement(food_webs);
             curr = getRandomElement(Object.keys(web));
             player.innerHTML = curr;
-            // console.log(web[curr]);
             cursor = document.getElementById(curr);
             $(document).mousemove(function(e) {
-                $(cursor).css({
-                    left: e.pageX - $(cursor).width()/2,
-                    top: e.pageY - $(cursor).height()/2
-                });
+                $(cursor).css({left: e.pageX - $(cursor).width()/2, top: e.pageY - $(cursor).height()/2});
             });
             cursor.removeAttribute('hidden');
             (function loop() {
@@ -205,10 +171,7 @@
             </div>
         </div>
         <div id="end" class="modal">
-            <div class="modal-content">
-                GAME OVER!<br><br>
-                Your score is <span class="score">0</span><br>
-                <span class="play">Play again</span>
+            <div class="modal-content">GAME OVER!<br><br>Your score is <span class="score">0</span><br><span class="play">Play again</span>
             </div>
         </div>
         <div id="game" class="container">
